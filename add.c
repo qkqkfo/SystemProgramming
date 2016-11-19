@@ -43,7 +43,7 @@ int option(char * argv[], int i) {
 	return 1;
 }
 
-int mergeFile(const char * pathName, const char * fileName, char * resultName, int BUFSIZE) {
+int addFile(const char * pathName, const char * fileName, char * resultName, int BUFSIZE) {
 	int inFile, outFile;
 	ssize_t nread;
 	char * buffer = (char *)malloc(sizeof(char)*BUFSIZE);
@@ -95,7 +95,7 @@ int main(int argc, char * argv[]) {
 	}
 	blockSize = file_info.st_size;
 
-	mergeFile(pathName, fileName, resultName, blockSize);
+	addFile(pathName, fileName, resultName, blockSize);
 
 	printf("받은 파일의 이름 : %s\n", fileName);
 	printf("결과 파일의 이름 : %s\n", resultName);
