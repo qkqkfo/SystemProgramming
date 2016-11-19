@@ -10,29 +10,30 @@
 #define LEN		1024
 #define MAXNUM	1000
 int fd;
-char pathName[LEN];			//Àı´ÜµÈ ÆÄÀÏÀÇ À§Ä¡
+char pathName[LEN];			//ì ˆë‹¨ëœ íŒŒì¼ì˜ ìœ„ì¹˜
 char * fileName = NULL;
 char * resultName = NULL;
 int fileSize;
 int blockSize = 512 << 10;	//default blockSize = 512KB
-int inItO = 0;				//ÆÄÀÏÀÇ ÀÌ¸§Àº ÇÊ¼ö·Î ¹Ş¾Æ¾ßÇÏ´Â Á¶°ÇÀÌ¹Ç·Î ¹Ş¾Ò´ÂÁö ¾È¹Ş¾Ò´ÂÁö ÇÁ·Î±×·¥¿¡°Ô ¾Ë·ÁÁÖ±â À§ÇØ ¼±¾ğ
-int resultFileNum = 0;		//°á°ú ÆÄÀÏÀÇ ¹øÈ£
+int inItO = 0;				//íŒŒì¼ì˜ ì´ë¦„ì€ í•„ìˆ˜ë¡œ ë°›ì•„ì•¼í•˜ëŠ” ì¡°ê±´ì´ë¯€ë¡œ 
+							//ë°›ì•˜ëŠ”ì§€ ì•ˆë°›ì•˜ëŠ”ì§€ í”„ë¡œê·¸ë¨ì—ê²Œ ì•Œë ¤ì£¼ê¸° ìœ„í•´ ì„ ì–¸
+int resultFileNum = 0;		//ê²°ê³¼ íŒŒì¼ì˜ ë²ˆí˜¸
 
 int option(char * argv[], int i) {
-	if (strcmp(argv[i], "-n") == 0) {			//Àı´ÜÇØ¼­ »ı¼ºµÇ´Â °á°ú ÆÄÀÏÀÇ ÀÌ¸§
+	if (strcmp(argv[i], "-n") == 0) {			//ì ˆë‹¨í•´ì„œ ìƒì„±ë˜ëŠ” ê²°ê³¼ íŒŒì¼ì˜ ì´ë¦„
 		resultName = argv[i + 1];
 	}
-	else if (strcmp(argv[i], "-s") == 0) {		//Àı´ÜÇÏ·Á´Â ÆÄÀÏÀÇ Å©±â(´ÜÀ§ KB)
+	else if (strcmp(argv[i], "-s") == 0) {		//ì ˆë‹¨í•˜ë ¤ëŠ” íŒŒì¼ì˜ í¬ê¸°(ë‹¨ìœ„ KB)
 		blockSize = atoi(argv[i + 1]) << 10;
 	}
-	else if (strcmp(argv[i], "-o") == 0) {		//Àı´ÜÇÒ ÆÄÀÏÀÇ ÀÌ¸§ ÁÖ±â
+	else if (strcmp(argv[i], "-o") == 0) {		//ì ˆë‹¨í•  íŒŒì¼ì˜ ì´ë¦„ ì£¼ê¸°
 		fileName = argv[i + 1];
-		inItO = 1;								//ÆÄÀÏÀÇ ÀÌ¸§À» ¹Ş¾Ò´Ù´Â Ç¥½Ã
+		inItO = 1;								//íŒŒì¼ì˜ ì´ë¦„ì„ ë°›ì•˜ë‹¤ëŠ” í‘œì‹œ
 	}
-	else if (strcmp(argv[i], "-d") == 0) {		//Àı´ÜÇÒ ÆÄÀÏÀ» ÀúÀåÇÒ µğ·ºÅä¸® °æ·Î
+	else if (strcmp(argv[i], "-d") == 0) {		//ì ˆë‹¨í•  íŒŒì¼ì„ ì €ì¥í•  ë””ë ‰í† ë¦¬ ê²½ë¡œ
 		strcpy(pathName, argv[i + 1]);
 	}
-	else {										//Àß¸øµÈ ¿É¼ÇÀ» È£ÃâÇÒ°æ¿ì ¿À·ù
+	else {										//ì˜ëª»ëœ ì˜µì…˜ì„ í˜¸ì¶œí• ê²½ìš° ì˜¤ë¥˜
 		perror("Wrong option!\n");
 		return -1;
 	}
@@ -40,14 +41,14 @@ int option(char * argv[], int i) {
 }
 
 int cutFile(const char * pathName, const char * fileName, char * resultName, int BUFSIZE) {
-	int inFile, outFile;
-	ssize_t nread;
-	char * buffer = (char *)malloc(sizeof(char)*BUFSIZE);
+	int inFile, outFile;										//íŒŒì¼ ê¸°ìˆ ì
+	ssize_t nread;												//nreadì˜ í¬ê¸°ë§Œí¼ ì½ê¸°
+	char * buffer = (char *)malloc(sizeof(char)*BUFSIZE);		//ë²„í¼ í¬ê¸°ë§Œí¼ ë™ì í• ë‹¹
 
 	if ((inFile = open(fileName, O_RDONLY)) == -1)	return -1;
 
 	while ((nread = read(inFile, buffer, BUFSIZE)) > 0) {
-		chdir(pathName);		//°á°ú ÆÄÀÏÀ» »ı¼ºÇÒ µğ·ºÅä¸®·Î ÀÌµ¿
+		chdir(pathName);		//ê²°ê³¼ íŒŒì¼ì„ ìƒì„±í•  ë””ë ‰í† ë¦¬ë¡œ ì´ë™
 		char output[LEN];
 		sprintf(output, "%s%03d", resultName, resultFileNum++);
 		if ((outFile = open(output, O_WRONLY | O_CREAT | O_TRUNC, PERM)) == -1) {		//PERM = 0664 ( -rw-rw-r--)
@@ -59,31 +60,32 @@ int cutFile(const char * pathName, const char * fileName, char * resultName, int
 			close(outFile);
 			return -3;
 		}
-		fchdir(fd);				//ÃÊ±â µğ·ºÅä¸®·Î ´Ù½Ã ÀÌµ¿
+		fchdir(fd);				//ì´ˆê¸° ë””ë ‰í† ë¦¬ë¡œ ë‹¤ì‹œ ì´ë™
 	}
 	close(inFile);
 	close(outFile);
+	free(buffer);				//ë™ì í•´ì œ
 	if (nread == -1)	return -4;
 	else				return 0;
 }
 
 int main(int argc, char * argv[]) {
 	int i;
-	struct stat file_info;
+	struct stat file_info;											//íŒŒì¼ì˜ ì •ë³´
 
-	if (getcwd(pathName, LEN) == NULL)	perror("getcwd error\n");	//Àı´ÜµÈ ÆÄÀÏÀÇ À§Ä¡´Â default °ªÀÌ ÇöÀç ÀÛ¾÷ÁßÀÎ µğ·ºÅä¸®
-	if ((fd = open(pathName, O_RDONLY)) == -1) {					//ÃÖÃÊ µğ·ºÅä¸®·Î ÀÌµ¿ÇÒ ¼ö ÀÖµµ·Ï fd¸¦ »ı¼º
-		perror("directory open error\n");							//fd´Â closeÇÏÁö ¾Ê°í À¯Áö
+	if (getcwd(pathName, LEN) == NULL)	perror("getcwd error\n");	//ì ˆë‹¨ëœ íŒŒì¼ì˜ ìœ„ì¹˜ëŠ” default ê°’ì´ í˜„ì¬ ì‘ì—…ì¤‘ì¸ ë””ë ‰í† ë¦¬
+	if ((fd = open(pathName, O_RDONLY)) == -1) {					//ìµœì´ˆ ë””ë ‰í† ë¦¬ë¡œ ì´ë™í•  ìˆ˜ ìˆë„ë¡ fdë¥¼ ìƒì„±
+		perror("directory open error\n");							//fdëŠ” closeí•˜ì§€ ì•Šê³  ìœ ì§€
 	}
 
-	for (i = 1; i < argc; i += 2) if (option(argv, i) == -1) exit(-1);		//¿É¼Ç°ªÀ» ¹Ş´Â ÇÔ¼ö
+	for (i = 1; i < argc; i += 2) if (option(argv, i) == -1) exit(-1);		//ì˜µì…˜ê°’ì„ ë°›ëŠ” í•¨ìˆ˜
 
-	if (inItO == 0) {														//ÇÊ¼ö ¿É¼Ç -o´Â ÇÊ¿ä
-		perror("ÇÊ¼ö ¿É¼Ç '-o'°¡ ¾ø½À´Ï´Ù\n");
+	if (inItO == 0) {											//í•„ìˆ˜ ì˜µì…˜ -oëŠ” í•„ìš”
+		perror("í•„ìˆ˜ ì˜µì…˜ '-o'ê°€ ì—†ìŠµë‹ˆë‹¤\n");
 		exit(-1);
 	}
 
-	if (resultName == NULL)	resultName = fileName;							//-n ¿É¼ÇÀÌ ¾ø´Â °æ¿ì Àı´ÜÇØ¼­ »ı¼ºµÇ´Â °á°ú ÆÄÀÏÀÇ ÀÌ¸§Àº fimeName(default°ª)À¸·Î ¼³Á¤
+	if (resultName == NULL)	resultName = fileName;				//-n ì˜µì…˜ì´ ì—†ëŠ” ê²½ìš° ì ˆë‹¨í•´ì„œ ìƒì„±ë˜ëŠ” ê²°ê³¼ íŒŒì¼ì˜ ì´ë¦„ì€ fimeName(defaultê°’)ìœ¼ë¡œ ì„¤ì •
 
 	if (0 > stat(fileName, &file_info)) {
 		perror("There is no file.\n");
@@ -91,20 +93,20 @@ int main(int argc, char * argv[]) {
 	}
 	else {
 		fileSize = file_info.st_size;
-		if ((fileSize / blockSize) > MAXNUM) {								//ºĞÇÒ ÆÄÀÏÀÇ ÃÖ´ë °¹¼ö(1000°³)¸¦ ³Ñ±â¸é
+		if ((fileSize / blockSize) > MAXNUM) {								//ë¶„í•  íŒŒì¼ì˜ ìµœëŒ€ ê°¯ìˆ˜(1000ê°œ)ë¥¼ ë„˜ê¸°ë©´
 			perror("Block size is too small to cut\n");
 			exit(-1);
 		}
 	}
 
 
-	mkdir(pathName, 0755);													//drwxrwxr-x  = 0775·Î µğ·ºÅä¸® »ı¼º
+	mkdir(pathName, 0755);													//drwxrwxr-x  = 0775ë¡œ ë””ë ‰í† ë¦¬ ìƒì„±
 	cutFile(pathName, fileName, resultName, blockSize);
 
-	printf("¹ŞÀº ÆÄÀÏÀÇ ÀÌ¸§ : %s\n", fileName);
-	printf("³ª´­ ÆÄÀÏÀÇ ´ÜÀ§ : %dKB\n", blockSize >> 10);
-	printf("°á°ú ÆÄÀÏÀÇ ÀÌ¸§ : %s\n", resultName);
-	printf("°á°ú ÆÄÀÏÀÌ ÀúÀåµÉ °æ·Î : %s\n", pathName);
+	printf("ë°›ì€ íŒŒì¼ì˜ ì´ë¦„ : %s\n", fileName);
+	printf("ë‚˜ëˆŒ íŒŒì¼ì˜ ë‹¨ìœ„ : %dKB\n", blockSize >> 10);
+	printf("ê²°ê³¼ íŒŒì¼ì˜ ì´ë¦„ : %s\n", resultName);
+	printf("ê²°ê³¼ íŒŒì¼ì´ ì €ì¥ë  ê²½ë¡œ : %s\n", pathName);
 
 	return 0;
 }
